@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChatApp - Connect with Friends",
   description: "A modern chat application with real-time messaging",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  themeColor: '#3B82F6',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
