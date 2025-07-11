@@ -1,0 +1,10 @@
+{
+  "name": "ChatApp - Connect with Friends",
+  "short_name": "ChatApp",
+  "description": "A modern chat application with real-time messaging",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "categories": ["social", "communication"]
+}
