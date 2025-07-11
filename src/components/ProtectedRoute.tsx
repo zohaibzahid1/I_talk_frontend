@@ -47,10 +47,8 @@ const ProtectedRoute = observer(({ children, fallback }: ProtectedRouteProps) =>
         // If not authenticated locally, try to validate token anyway (in case cookie exists)
         const isValidToken = await authApi.validateToken();
         
-        if (isValidToken) {
-          // Token is valid, get user data
-          await loginStore.checkAuthStatus();
-        } else {
+        if (!isValidToken) {
+                
           // Token is invalid, redirect to login
           loginStore.setAuthenticated(false);
           router.push('/login');

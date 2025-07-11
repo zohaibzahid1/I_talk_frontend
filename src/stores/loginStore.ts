@@ -7,7 +7,8 @@ export class LoginStore {
     isLoading = false;
     isAuthenticated = false;
     user: User | null = null;
-    error: string | null = null;    constructor() {
+    error: string | null = null;  
+      constructor() {
         // Initialize the API service
         makeAutoObservable(this);
         // Initialize from local storage only on client side

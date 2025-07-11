@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '@/context/storeContext';
 
 const HomePage = observer(() => {
+  
   const { loginStore } = useStore();
 
   return (
