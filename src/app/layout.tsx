@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "../context/storeContext";
+import { ThemeProvider } from "../context/themeContext";
 import ConditionalNavbar from "@/components/UI/ConditionalNavbar";
 
 const geistSans = Geist({
@@ -42,10 +43,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider>
-          <ConditionalNavbar />
-          {children}
-        </StoreProvider>
+        <ThemeProvider>
+          <StoreProvider>
+            <ConditionalNavbar />
+            {children}
+          </StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

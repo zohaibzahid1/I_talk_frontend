@@ -1,13 +1,39 @@
 // User and Authentication Types
 export interface User {
-  id: string;
+  id: string | number; // Handle both string and number IDs from backend
   email: string;
   firstName: string;
   lastName: string;
   avatar: string;
   googleId?: string | null;
+  isOnline?: boolean;
+}
+export interface Message {
+  id: string;
+  content: string;
+  createdAt: string;
+  sender: {
+    id: string | number;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+  };
 }
 
+export interface Chat {
+  id: string;
+  isGroup: boolean;
+  name?: string;
+  participants: Array<{
+    id: string | number;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+    isOnline: boolean;
+  }>;
+  messages: Message[];
+}
 export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
