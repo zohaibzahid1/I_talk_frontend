@@ -235,10 +235,10 @@ export class ChatApi {
     }
   }
 
-  async getChatMessages(chatId: number, limit: number = 50, offset: number = 0): Promise<Message[]> {
+  async getChatMessages(chatId: number): Promise<Message[]> {
     const query = `
-      query GetChatMessages($chatId: Int!, $limit: Int!, $offset: Int!) {
-        getChatMessages(chatId: $chatId, limit: $limit, offset: $offset) {
+      query GetChatMessages($chatId: Int!) {
+        getChatMessages(chatId: $chatId) {
           id
           content
           createdAt
@@ -254,9 +254,7 @@ export class ChatApi {
 
     try {
       const response = await graphqlService.query<GetChatMessagesResponse>(query, {
-        chatId,
-        limit,
-        offset
+        chatId
       });
       return response.getChatMessages;
     } catch (error) {

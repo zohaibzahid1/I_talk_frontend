@@ -17,10 +17,6 @@ export class ChatStore {
 
     constructor() {
         makeAutoObservable(this);
-        autorun(() => {
-            console.log("chats:", this.chats);
-            console.log("activechatmsg:", this.activeChatMessages);
-        });
     }
   
     setLoading(loading: boolean) {
