@@ -32,7 +32,7 @@ export interface Chat {
     avatar?: string;
     isOnline: boolean;
   }>;
-  messages: Message[];
+  lastMessage?: Message;
 }
 export interface AuthState {
   isLoading: boolean;

@@ -26,7 +26,7 @@ const ChatCard = observer(({ chat, onChatSelect, isActive, chatListStore }: Chat
   
   const otherParticipant = chatStore.getOtherParticipant(chat, loginStore.user?.id || 0);
   const displayName = chatStore.getChatDisplayName(chat, loginStore.user?.id || 0);
-  const lastMessage = chat.messages[chat.messages.length - 1];
+  const lastMessage = chat.lastMessage;
 
   return (
     <div

@@ -21,13 +21,11 @@ export class LoginStore {
         
         autorun(() => {
             if (this.isAuthenticated) {
-                console.log('User is authenticated:', this.user);
                 // Save to local storage when authenticated (only on client)
                 if (typeof window !== 'undefined') {
                     LocalStorageService.saveUser(this.user);
                 }
             } else {
-                console.log('User is not authenticated');
                 // Clear local storage when not authenticated (only on client)
                 if (typeof window !== 'undefined') {
                     LocalStorageService.saveUser(null);
@@ -73,7 +71,6 @@ export class LoginStore {
 
     async checkAuthStatus(force = false) {  
         // Check Here if access token is expired then get a new token from refresh token
-        console.log("Auth check initiated")
         try {
             this.setLoading(true);
             
@@ -89,10 +86,8 @@ export class LoginStore {
                     this.rootStore.socketStore.connect(token);
                 }
                 
-                console.log('Auth check successful - user found');
             } else {
                 this.setAuthenticated(false);
-                console.log('Auth check - no user found');
             }
         } catch (error) {
             console.error('Auth check failed:', error);

@@ -8,12 +8,16 @@ export const useChatLayout = () => {
   const [showUserSelector, setShowUserSelector] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
-  const handleChatSelect = (chat: Chat) => {
-    setSelectedChat(chat);
-    chatStore.setActiveChat(chat);
-    // Also set the chat in the ChatWindowStore
-    chatWindowStore.setCurrentChat(chat);
-    setIsMobileView(true);
+  const handleChatSelect = async (chat: Chat) => {
+    try {
+      setSelectedChat(chat);
+      await chatStore.selectChat(chat);
+      // Also set the chat in the ChatWindowStore
+      chatWindowStore.setCurrentChat(chat);
+      setIsMobileView(true);
+    } catch (error) {
+      console.error('Failed to select chat:', error);
+    }
   };
 
   const handleUserSelect = async (user: User) => {

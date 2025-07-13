@@ -16,12 +16,10 @@ export const useSocket = (): Socket | null => {
       });
 
       socketRef.current.on('connect', () => {
-        console.log('Connected to socket server:', socketRef.current?.id);
         setIsConnected(true);
       });
 
       socketRef.current.on('disconnect', () => {
-        console.log('Disconnected from socket server');
         setIsConnected(false);
       });
     }

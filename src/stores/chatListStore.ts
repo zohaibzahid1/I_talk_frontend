@@ -13,10 +13,10 @@ export class ChatListStore {
 
     // Format last message for display in chat list
     formatLastMessage(chat: Chat, currentUserId: string | number): string {
-        if (chat.messages.length === 0) {
+        if (!chat.lastMessage) {
             return "No messages yet";
         }
-        const lastMessage = chat.messages[chat.messages.length - 1];
+        const lastMessage = chat.lastMessage;
         
         // Check if last message is from current user
         const isCurrentUser = lastMessage.sender.id.toString() === currentUserId.toString();

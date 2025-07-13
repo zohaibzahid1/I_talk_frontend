@@ -1,8 +1,6 @@
-import { makeAutoObservable } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 import { chatApi} from '../services/chatApi';
 import { Chat, Message } from '../types/auth';
-import { useSameSocket } from "@/hooks/Socket/useSocket";
-import { Socket } from 'socket.io-client';
 
 
 // Chat store to manage chat-related state and actions
@@ -14,16 +12,15 @@ export class ChatStore {
     activeChat: Chat | null = null;
     isLoading = false;
     error: string | null = null;
-    // Socket instance for real-time updates
-    socket: Socket | null = null; 
-    isConnected: boolean = false; // Track socket connection status
+    activeChatMessages: Message[] = []; // Messages for the currently active chat
     
 
     constructor() {
         makeAutoObservable(this);
-        const { socket, isConnected } = useSameSocket(); // Initialize socket instance
-        this.socket = socket;
-        this.isConnected = isConnected;
+        autorun(() => {
+            console.log("chats:", this.chats);
+            console.log("activechatmsg:", this.activeChatMessages);
+        });
     }
   
     setLoading(loading: boolean) {
@@ -45,6 +42,8 @@ export class ChatStore {
             this.activeChat = existingChat || chat;
         } else {
             this.activeChat = null;
+            // Clear messages when no chat is active
+            this.clearActiveChatMessages();
         }
     }
 
@@ -62,7 +61,6 @@ export class ChatStore {
             this.setLoading(true);
             this.setError(null);
             const chats = await chatApi.getUserChats();
-            console.log('Loaded chats:', chats);
             this.setChats(chats);
         } catch (error: any) {
             console.error('Failed to load chats:', error);
@@ -71,19 +69,38 @@ export class ChatStore {
             this.setLoading(false);
         }
     }
-
+    
+   
     async openOrCreateChat(otherUserId: string | number) {
         try {
             this.setLoading(true);
             this.setError(null);
             const chat = await chatApi.openOrCreateChat(Number(otherUserId));
+            // extract the data relevant to the chat
             this.addChat(chat);
             this.setActiveChat(chat);
+            // load messages for the currently active chat
+            await this.loadChatMessages(Number(chat.id));
             return chat;
         } catch (error: any) {
             console.error('Failed to open/create chat:', error);
             this.setError(error.message || 'Failed to open chat');
             throw error;
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    // Select an existing chat and load its messages
+    async selectChat(chat: Chat) {
+        try {
+            this.setLoading(true);
+            this.setError(null);
+            this.setActiveChat(chat);
+            await this.loadChatMessages(Number(chat.id));
+        } catch (error: any) {
+            console.error('Failed to select chat:', error);
+            this.setError(error.message || 'Failed to load chat messages');
         } finally {
             this.setLoading(false);
         }
@@ -121,35 +138,47 @@ export class ChatStore {
             }
         };
 
-        // Optimistically add the message to the UI
+        // Optimistically add the message to activeChatMessages if this is the active chat
+        if (this.activeChat && this.activeChat.id === chatId) {
+            this.activeChatMessages.push(tempMessage);
+        }
+
+        // Update lastMessage in chats array
         const chatIndex = this.chats.findIndex(chat => chat.id === chatId);
         if (chatIndex !== -1) {
-            this.chats[chatIndex].messages.push(tempMessage);
+            this.chats[chatIndex].lastMessage = tempMessage;
         }
 
         try {
-            const newMessage = await chatApi.sendMessageToDB(chatId, content);
+            const newMessage = await chatApi.sendMessage(chatId, content);
             
-            // Replace the temporary message with the real one
-            if (chatIndex !== -1) {
-                const tempIndex = this.chats[chatIndex].messages.findIndex(msg => msg.id === tempMessage.id);
+            // Replace the temporary message with the real one in activeChatMessages
+            if (this.activeChat && this.activeChat.id === chatId) {
+                const tempIndex = this.activeChatMessages.findIndex(msg => msg.id === tempMessage.id);
                 if (tempIndex !== -1) {
-                    this.chats[chatIndex].messages[tempIndex] = newMessage;
+                    this.activeChatMessages[tempIndex] = newMessage;
                 }
             }
-            // Emit the new message via socket
-            if (this.socket) {
-                this.socket.emit('sendMessage', { chatId, message: newMessage });
+
+            // Update lastMessage in chats array with real message
+            if (chatIndex !== -1) {
+                this.chats[chatIndex].lastMessage = newMessage;
             }
             
             return newMessage;
         } catch (error) {
-            // Remove the temporary message on error
-            if (chatIndex !== -1) {
-                const tempIndex = this.chats[chatIndex].messages.findIndex(msg => msg.id === tempMessage.id);
+            // Remove the temporary message on error from activeChatMessages
+            if (this.activeChat && this.activeChat.id === chatId) {
+                const tempIndex = this.activeChatMessages.findIndex(msg => msg.id === tempMessage.id);
                 if (tempIndex !== -1) {
-                    this.chats[chatIndex].messages.splice(tempIndex, 1);
+                    this.activeChatMessages.splice(tempIndex, 1);
                 }
+            }
+
+            // Restore previous lastMessage in chats array on error
+            if (chatIndex !== -1) {
+                // We could restore the previous lastMessage here if needed
+                // For now, we'll leave it as is since the temp message wasn't saved to backend
             }
             
             console.error('Failed to send message:', error);
@@ -158,8 +187,24 @@ export class ChatStore {
     }
   
 
+    // Method to load messages when chat is selected
+    async loadChatMessages(chatId: number) {
+        try {
+            const messages = await chatApi.getChatMessages(chatId);
+            this.activeChatMessages = messages || [];
+        } catch (error) {
+            console.error('Failed to load chat messages:', error);
+            this.activeChatMessages = [];
+        }
+    }
+
     clearError() {
         this.error = null;
+    }
+
+    // Clear active chat messages (useful when switching chats or logging out)
+    clearActiveChatMessages() {
+        this.activeChatMessages = [];
     }
 
     // Helper method to get chat participants excluding current user
@@ -170,7 +215,6 @@ export class ChatStore {
         }
         
         const otherParticipant = chat.participants.find(p => p.id.toString() !== currentUserId.toString());
-        //console.log('Other participant:', otherParticipant);
         return otherParticipant 
             ? `${otherParticipant.firstName || ''} ${otherParticipant.lastName || ''}`.trim() || otherParticipant.email
             : 'Unknown User';

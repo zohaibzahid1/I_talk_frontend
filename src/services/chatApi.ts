@@ -14,34 +14,38 @@ export interface GetUserChatsResponse {
   getUserChats: Chat[];
 }
 
+export interface GetChatMessagesResponse {
+  getChatMessages: Message[];
+}
+
 export class ChatApi {
   async openOrCreateChat(otherUserId: string | number): Promise<Chat> {
     const mutation = `
       mutation OpenOrCreateChat($otherUserId: Int!) {
-        openOrCreateChat(otherUserId: $otherUserId) {
-          id
-          isGroup
-          name
-          participants {
-            id
-            email
-            firstName
-            lastName
-            avatar
-            isOnline
-          }
-          messages {
-            id
-            content
-            createdAt
-            sender {
-              id
-              firstName
-              lastName
-              avatar
-            }
-          }
+      openOrCreateChat(otherUserId: $otherUserId) {
+        id
+        isGroup
+        name
+        participants {
+        id
+        email
+        firstName
+        lastName
+        avatar
+        isOnline
         }
+        lastMessage {
+        id
+        content
+        createdAt
+        sender {
+          id
+          firstName
+          lastName
+          avatar
+        }
+        }
+      }
       }
     `;
 
@@ -104,30 +108,30 @@ export class ChatApi {
   async getUserChats(): Promise<Chat[]> {
     const query = `
       query GetUserChats {
-        getUserChats {
-          id
-          isGroup
-          name
-          participants {
-            id
-            email
-            firstName
-            lastName
-            avatar
-            isOnline
-          }
-          messages {
-            id
-            content
-            createdAt
-            sender {
-              id
-              firstName
-              lastName
-              avatar
-            }
-          }
+      getUserChats {
+        id
+        isGroup
+        name
+        participants {
+        id
+        email
+        firstName
+        lastName
+        avatar
+        isOnline
         }
+        lastMessage {
+        id
+        content
+        createdAt
+        sender {
+          id
+          firstName
+          lastName
+          avatar
+        }
+        }
+      }
       }
     `;
 
@@ -202,10 +206,10 @@ export class ChatApi {
     }
   }
 
-  async sendMessageToDB(chatId: string, content: string): Promise<Message> {
+  async sendMessage(chatId: string, content: string): Promise<Message> {
     const mutation = `
       mutation SendMessage($chatId: ID!, $content: String!) {
-        sendMessageToDB(chatId: $chatId, content: $content) {
+        sendMessage(chatId: $chatId, content: $content) {
           id
           content
           createdAt
@@ -220,14 +224,44 @@ export class ChatApi {
     `;
 
     try {
-      const response = await graphqlService.mutation<{ sendMessageToDB: Message }>(mutation, {
+      const response = await graphqlService.mutation<{ sendMessage: Message }>(mutation, {
         chatId,
         content
       });
-      return response.sendMessageToDB;
+      return response.sendMessage;
     } catch (error) {
       console.error('Failed to send message:', error);
       throw new Error('Failed to send message');
+    }
+  }
+
+  async getChatMessages(chatId: number, limit: number = 50, offset: number = 0): Promise<Message[]> {
+    const query = `
+      query GetChatMessages($chatId: Int!, $limit: Int!, $offset: Int!) {
+        getChatMessages(chatId: $chatId, limit: $limit, offset: $offset) {
+          id
+          content
+          createdAt
+          sender {
+            id
+            firstName
+            lastName
+            avatar
+          }
+        }
+      }
+    `;
+
+    try {
+      const response = await graphqlService.query<GetChatMessagesResponse>(query, {
+        chatId,
+        limit,
+        offset
+      });
+      return response.getChatMessages;
+    } catch (error) {
+      console.error('Failed to get chat messages:', error);
+      throw new Error('Failed to fetch messages');
     }
   }
 }

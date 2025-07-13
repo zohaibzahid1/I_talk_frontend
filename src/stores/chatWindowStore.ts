@@ -16,13 +16,6 @@ export class ChatWindowStore {
 
   constructor() {
     makeAutoObservable(this);
-    autorun(() => {
-      if (this.currentChat) {
-        console.log('Current chat set:', this.currentChat);
-      } else {
-        console.log('No current chat selected');
-      }
-    });
   }
 
   setCurrentUserId(userId: number | null) {
@@ -46,18 +39,18 @@ export class ChatWindowStore {
   }
 
   // Get processed message data for rendering
-  getProcessedMessages(): Array<{
+  getProcessedMessages(messages: Message[]): Array<{
     message: Message;
     index: number;
     isOwnMessage: boolean;
     previousMessage?: Message;
     showDateSeparator: boolean;
   }> {
-    if (!this.currentChat) return [];
+    if (!messages) return [];
 
-    return this.currentChat.messages.map((message, index) => {
+    return messages.map((message, index) => {
       const isOwnMessage = this.isOwnMessage(message);
-      const previousMessage = index > 0 ? this.currentChat!.messages[index - 1] : undefined;
+      const previousMessage = index > 0 ? messages[index - 1] : undefined;
       const showDateSeparator = this.shouldShowDateSeparator(message, previousMessage);
 
       return {
@@ -71,14 +64,14 @@ export class ChatWindowStore {
   }
 
   // Check if there are any messages
-  get hasMessages(): boolean {
-    return this.currentChat ? this.currentChat.messages.length > 0 : false;
+  hasMessages(messages: Message[]): boolean {
+    return messages ? messages.length > 0 : false;
   }
 
   // Get empty state data
-  get emptyStateData() {
+  getEmptyStateData(messages: Message[]) {
     return {
-      hasMessages: this.hasMessages,
+      hasMessages: this.hasMessages(messages),
       emptyMessage: "Start the conversation!",
       emptySubMessage: "Send a message to get things started."
     };
@@ -170,10 +163,6 @@ export class ChatWindowStore {
     const otherParticipant = this.currentChat.participants.find(p => 
       p.id.toString() !== currentUserIdStr
     );
-    
-    console.log('getChatDisplayInfo - currentUserId:', this.currentUserId, 'currentUserIdStr:', currentUserIdStr);
-    console.log('getChatDisplayInfo - participants:', this.currentChat.participants.map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName}` })));
-    console.log('getChatDisplayInfo - otherParticipant:', otherParticipant);
     
     const displayName = this.currentChat.isGroup 
       ? this.currentChat.name || `Group Chat (${this.currentChat.participants.length} members)`

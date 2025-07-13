@@ -15,11 +15,12 @@ interface MessagesListProps {
 }
 
 const MessagesList = observer(({}: MessagesListProps) => {
-  const { chatWindowStore, loginStore } = useStore();
+  const { chatWindowStore, loginStore, chatStore } = useStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get current chat from store
+  // Get current chat and messages from store
   const currentChat = chatWindowStore.currentChat;
+  const messages = chatStore.activeChatMessages;
 
   // Reference to the end of the messages list for scrolling
   const scrollToBottom = () => {
@@ -31,8 +32,8 @@ const MessagesList = observer(({}: MessagesListProps) => {
 
   // when messages change, scroll to the bottom
   useEffect(() => {
-    if (currentChat?.messages) {
-      const currentMessageCount = currentChat.messages.length;
+    if (messages) {
+      const currentMessageCount = messages.length;
       const hadMessages = prevMessageCountRef.current > 0;
       
       // Always scroll to bottom when:
@@ -47,7 +48,7 @@ const MessagesList = observer(({}: MessagesListProps) => {
       
       prevMessageCountRef.current = currentMessageCount;
     }
-  }, [currentChat?.messages, currentChat?.messages?.length]);
+  }, [messages, messages?.length]);
 
   // Set current user ID when user changes
   useEffect(() => {
@@ -60,8 +61,8 @@ const MessagesList = observer(({}: MessagesListProps) => {
   }
 
   // Get processed data from store
-  const processedMessages = chatWindowStore.getProcessedMessages();
-  const emptyState = chatWindowStore.emptyStateData;
+  const processedMessages = chatWindowStore.getProcessedMessages(messages);
+  const emptyState = chatWindowStore.getEmptyStateData(messages);
 
   return (
     <div className="h-full overflow-y-auto px-6 py-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
