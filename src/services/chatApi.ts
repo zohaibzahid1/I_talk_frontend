@@ -202,10 +202,10 @@ export class ChatApi {
     }
   }
 
-  async sendMessage(chatId: string, content: string): Promise<Message> {
+  async sendMessageToDB(chatId: string, content: string): Promise<Message> {
     const mutation = `
       mutation SendMessage($chatId: ID!, $content: String!) {
-        sendMessage(chatId: $chatId, content: $content) {
+        sendMessageToDB(chatId: $chatId, content: $content) {
           id
           content
           createdAt
@@ -220,11 +220,11 @@ export class ChatApi {
     `;
 
     try {
-      const response = await graphqlService.mutation<{ sendMessage: Message }>(mutation, {
+      const response = await graphqlService.mutation<{ sendMessageToDB: Message }>(mutation, {
         chatId,
         content
       });
-      return response.sendMessage;
+      return response.sendMessageToDB;
     } catch (error) {
       console.error('Failed to send message:', error);
       throw new Error('Failed to send message');

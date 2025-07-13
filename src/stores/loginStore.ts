@@ -7,8 +7,11 @@ export class LoginStore {
     isLoading = false;
     isAuthenticated = false;
     user: User | null = null;
-    error: string | null = null;  
-      constructor() {
+    error: string | null = null;
+    private rootStore: any; // Will be properly typed later to avoid circular dependency
+    
+    constructor(rootStore?: any) {
+        this.rootStore = rootStore;
         // Initialize the API service
         makeAutoObservable(this);
         // Initialize from local storage only on client side
@@ -79,6 +82,13 @@ export class LoginStore {
             if (response.getCurrentUser) {
                 this.setUser(response.getCurrentUser);
                 this.setAuthenticated(true);
+                
+                // Connect to socket server if token exists
+                const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+                if (token && this.rootStore?.socketStore) {
+                    this.rootStore.socketStore.connect(token);
+                }
+                
                 console.log('Auth check successful - user found');
             } else {
                 this.setAuthenticated(false);
@@ -96,6 +106,11 @@ export class LoginStore {
         try {
             await authApi.logout();
             
+            // Disconnect from socket server
+            if (this.rootStore?.socketStore) {
+                this.rootStore.socketStore.disconnect();
+            }
+            
             // Clear local state
             this.setUser(null);
             this.setAuthenticated(false);
@@ -104,6 +119,12 @@ export class LoginStore {
             LocalStorageService.clearStorage();
         } catch (error) {
             console.error('Logout failed:', error);
+            
+            // Disconnect from socket server even if logout fails
+            if (this.rootStore?.socketStore) {
+                this.rootStore.socketStore.disconnect();
+            }
+            
             // Even if the server logout fails, clear local state
             this.setUser(null);
             this.setAuthenticated(false);

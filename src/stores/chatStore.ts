@@ -1,6 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { chatApi} from '../services/chatApi';
 import { Chat, Message } from '../types/auth';
+import { useSameSocket } from "@/hooks/Socket/useSocket";
+import { Socket } from 'socket.io-client';
 
 
 // Chat store to manage chat-related state and actions
@@ -12,9 +14,16 @@ export class ChatStore {
     activeChat: Chat | null = null;
     isLoading = false;
     error: string | null = null;
+    // Socket instance for real-time updates
+    socket: Socket | null = null; 
+    isConnected: boolean = false; // Track socket connection status
+    
 
     constructor() {
         makeAutoObservable(this);
+        const { socket, isConnected } = useSameSocket(); // Initialize socket instance
+        this.socket = socket;
+        this.isConnected = isConnected;
     }
   
     setLoading(loading: boolean) {
@@ -98,7 +107,7 @@ export class ChatStore {
     }
 
     // Send a message to a chat
-    async sendMessage(chatId: string, content: string) {
+    async sendMessageToDB(chatId: string, content: string) {
         // Create a temporary message for optimistic updates
         const tempMessage: Message = {
             id: `temp-${Date.now()}-${Math.random()}`, // Temporary unique ID
@@ -119,7 +128,7 @@ export class ChatStore {
         }
 
         try {
-            const newMessage = await chatApi.sendMessage(chatId, content);
+            const newMessage = await chatApi.sendMessageToDB(chatId, content);
             
             // Replace the temporary message with the real one
             if (chatIndex !== -1) {
@@ -127,6 +136,10 @@ export class ChatStore {
                 if (tempIndex !== -1) {
                     this.chats[chatIndex].messages[tempIndex] = newMessage;
                 }
+            }
+            // Emit the new message via socket
+            if (this.socket) {
+                this.socket.emit('sendMessage', { chatId, message: newMessage });
             }
             
             return newMessage;
@@ -143,6 +156,7 @@ export class ChatStore {
             throw error;
         }
     }
+  
 
     clearError() {
         this.error = null;

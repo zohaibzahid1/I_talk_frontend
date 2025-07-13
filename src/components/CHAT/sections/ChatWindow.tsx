@@ -18,13 +18,11 @@ const ChatWindow = observer(({ onClose }: ChatWindowProps) => {
   // Get current chat from store
   const currentChat = chatWindowStore.currentChat;
 
-  
-
-
   const handleSendMessage = async (message: string) => {
     const chatId = chatWindowStore.currentChatId;
     if (!chatId) return;
-    await chatStore.sendMessage(chatId.toString(), message);
+    await chatStore.sendMessageToDB(chatId.toString(), message);
+    // Also emit the message to socket using chat store
   };
 
   const handleClose = () => {

@@ -1,5 +1,4 @@
-const GRAPHQL_ENDPOINT = 'http://localhost:3000/graphql'; // Backend GraphQL endpoint
-
+const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'http://localhost:3000/graphql';
 interface GraphQLResponse<T> {
   data: T;
   errors?: Array<{
