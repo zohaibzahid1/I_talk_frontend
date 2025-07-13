@@ -16,7 +16,7 @@ export class ChatStore {
     constructor() {
         makeAutoObservable(this);
     }
-
+  
     setLoading(loading: boolean) {
         this.isLoading = loading;
     }

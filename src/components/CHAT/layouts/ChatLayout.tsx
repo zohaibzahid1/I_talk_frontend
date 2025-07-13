@@ -2,7 +2,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import ChatList from '../sections/ChatList';
-import UserSelector from '../../UserSelector';
+import UserSelector from '../../chatSelection/UserSelector';
 import { useChatLayout } from '@/hooks/useChatLayout';
 import { useTheme } from '@/context/themeContext';
 

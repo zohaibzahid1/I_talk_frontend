@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/context/storeContext';
-import ChatInterface from './CHAT/sections/ChatInterface';
-import UserSelector from './UserSelector';
+import ChatInterface from '../CHAT/sections/ChatInterface';
+import UserSelector from '../chatSelection/UserSelector';
 import { User } from '@/types/auth';
 
 const HomePage = observer(() => {

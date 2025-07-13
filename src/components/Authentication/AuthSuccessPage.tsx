@@ -10,6 +10,8 @@ const AuthSuccessPage = observer(() => {
 
   useEffect(() => {
     const handleAuthSuccess = async () => {
+      
+
       try {
         loginStore.setLoading(true);
         loginStore.clearError();
