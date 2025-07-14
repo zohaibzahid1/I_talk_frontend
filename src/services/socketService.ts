@@ -1,5 +1,7 @@
 // services/socketService.ts
+import { EmitData, Message } from '@/types/auth';
 import { io, Socket } from 'socket.io-client';
+
 
 class SocketService {
   private static instance: SocketService;
@@ -53,7 +55,7 @@ class SocketService {
     }
   }
 
-  emit(event: string, data: any): void {
+  emit(event: string, data: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
@@ -61,13 +63,13 @@ class SocketService {
     }
   }
 
-  on(event: string, callback: (...args: any[]) => void): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     if (this.socket) {
       this.socket.on(event, callback);
     }
   }
 
-  off(event: string, callback?: (...args: any[]) => void): void {
+  off(event: string, callback?: (...args: unknown[]) => void): void {
     if (this.socket) {
       this.socket.off(event, callback);
     }
@@ -81,7 +83,7 @@ class SocketService {
     this.emit('leaveRoom', roomId);
   }
 
-  sendMessage(chatId: string, message: any): void {
+  sendMessage(chatId: string, message: Message): void {
     this.emit('sendMessage', { chatId, message });
   }
 

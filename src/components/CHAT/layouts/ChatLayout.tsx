@@ -6,6 +6,10 @@ import UserSelector from '../../chatSelection/UserSelector';
 import { useChatLayout } from '@/hooks/useChatLayout';
 import { useTheme } from '@/context/themeContext';
 
+type ChatChildProps = {
+  onClose: () => void;
+};
+
 interface ChatLayoutProps {
   children?: React.ReactNode;
 }
@@ -84,10 +88,10 @@ const ChatLayout = observer(({ children }: ChatLayoutProps) => {
           // Render the chat content when a chat is selected
           <div className="h-full w-full flex flex-col bg-white shadow-lg">
             {React.Children.map(children, child => 
-              React.isValidElement(child) 
+              React.isValidElement<ChatChildProps>(child) 
                 ? React.cloneElement(child, { 
                     onClose: handleBackToList 
-                  } as any)
+                  } )
                 : child
             )}
           </div>

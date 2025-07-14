@@ -60,7 +60,6 @@ const UserSelectorList = observer(({ onUserClick }: UserSelectorListProps) => {
   return (
     <div className="space-y-1 p-3">
       {userSelectorStore.filteredUsers.map((user: User) => {
-        const isSelected = userSelectorStore.selectedUsers.some((u: User) => u.id === user.id);
         return (
           <UserSelectorItem
             key={user.id}

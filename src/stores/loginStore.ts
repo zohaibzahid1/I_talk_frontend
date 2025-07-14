@@ -3,6 +3,7 @@ import { authApi} from '../services/authApi';
 import { User } from '../types/auth';
 import { LocalStorageService } from '../services/localStorageService';
 import socketService from '../services/socketService';
+import { RootStore } from "./rootStore";
 
 export class LoginStore {
     isLoading = false;
@@ -11,7 +12,7 @@ export class LoginStore {
     error: string | null = null;
     private rootStore: any; // Will be properly typed later to avoid circular dependency
     
-    constructor(rootStore?: any) {
+    constructor(rootStore?: RootStore) {
         this.rootStore = rootStore;
         // Initialize the API service
         makeAutoObservable(this);
@@ -74,7 +75,7 @@ export class LoginStore {
         this.error = null;
     }
 
-    async checkAuthStatus(force = false) {  
+    async checkAuthStatus() {  
         // Check Here if access token is expired then get a new token from refresh token
         try {
             this.setLoading(true);
@@ -138,8 +139,8 @@ export class LoginStore {
             this.clearError();
             const authUrl = await authApi.getGoogleAuthUrl();
             window.location.href = authUrl;
-        } catch (error: any) {
-            this.setError(error.message || 'Failed to initiate login. Please try again.');
+        } catch (error: unknown) {
+            this.setError(error instanceof Error ? error.message : 'Failed to initiate login. Please try again.');
             this.setLoading(false);
         }
     };

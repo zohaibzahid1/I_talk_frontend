@@ -17,7 +17,7 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader = observer(({ onClose }: ChatHeaderProps) => {
-  const { chatWindowStore, loginStore } = useStore();
+  const { chatWindowStore } = useStore();
   
   // Get current chat from store
   const currentChat = chatWindowStore.currentChat;

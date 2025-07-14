@@ -31,6 +31,7 @@ const ProtectedRoute = observer(({ children, fallback }: ProtectedRouteProps) =>
         } else {
           setIsAuthenticated(false);
           loginStore.setAuthenticated(false);
+          
           router.push('/login');
         }
       } catch (error) {

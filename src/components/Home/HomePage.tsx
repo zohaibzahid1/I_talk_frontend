@@ -29,9 +29,7 @@ const HomePage = observer(() => {
     }
   };
 
-  const handleBackToHome = () => {
-    setShowChatInterface(false);
-  };
+  
 
   // If chat interface is active, show it
   if (showChatInterface) {

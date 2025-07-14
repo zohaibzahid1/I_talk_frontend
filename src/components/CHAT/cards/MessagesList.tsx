@@ -10,11 +10,9 @@ import React, { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/context/storeContext';
 
-interface MessagesListProps {
-  // No props needed - using store for current chat
-}
 
-const MessagesList = observer(({}: MessagesListProps) => {
+
+const MessagesList = observer(() => {
   const { chatWindowStore, loginStore, chatStore } = useStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

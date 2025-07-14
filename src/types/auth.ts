@@ -65,3 +65,17 @@ export interface GraphQLResponse<T> {
     path?: string[];
   }>;
 }
+
+
+
+type WithMessage = {
+  chatId: string;
+  message: Message;
+};
+
+type WithoutMessage = {
+  roomId: string;
+};
+
+export type EmitData = WithMessage | WithoutMessage;
+

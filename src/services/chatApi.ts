@@ -49,18 +49,13 @@ export class ChatApi {
       }
     `;
 
-    try {
-      // Ensure the otherUserId is converted to a number for GraphQL
-      const numericUserId = typeof otherUserId === 'string' ? parseInt(otherUserId, 10) : otherUserId;
-      
-      const response = await graphqlService.mutation<OpenChatResponse>(mutation, {
-        otherUserId: numericUserId
-      });
-      return response.openOrCreateChat;
-    } catch (error) {
-      console.error('Failed to open/create chat:', error);
-      throw new Error('Failed to open chat');
-    }
+    // Ensure the otherUserId is converted to a number for GraphQL
+    const numericUserId = typeof otherUserId === 'string' ? parseInt(otherUserId, 10) : otherUserId;
+    
+    const response = await graphqlService.mutation<OpenChatResponse>(mutation, {
+      otherUserId: numericUserId
+    });
+    return response.openOrCreateChat;
   }
 
   async createGroupChat(name: string, participantIds: number[]): Promise<Chat> {
@@ -93,16 +88,11 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.mutation<CreateGroupChatResponse>(mutation, {
-        name,
-        participantIds
-      });
-      return response.createGroupChat;
-    } catch (error) {
-      console.error('Failed to create group chat:', error);
-      throw new Error('Failed to create group chat');
-    }
+    const response = await graphqlService.mutation<CreateGroupChatResponse>(mutation, {
+      name,
+      participantIds
+    });
+    return response.createGroupChat;
   }
 
   async getUserChats(): Promise<Chat[]> {
@@ -135,13 +125,8 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.query<GetUserChatsResponse>(query);
-      return response.getUserChats;
-    } catch (error) {
-      console.error('Failed to get user chats:', error);
-      throw new Error('Failed to fetch chats');
-    }
+    const response = await graphqlService.query<GetUserChatsResponse>(query);
+    return response.getUserChats;
   }
 
   async addParticipant(chatId: number, userId: number): Promise<Chat> {
@@ -163,16 +148,11 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.mutation<{ addParticipant: Chat }>(mutation, {
-        chatId,
-        userId
-      });
-      return response.addParticipant;
-    } catch (error) {
-      console.error('Failed to add participant:', error);
-      throw new Error('Failed to add participant');
-    }
+    const response = await graphqlService.mutation<{ addParticipant: Chat }>(mutation, {
+      chatId,
+      userId
+    });
+    return response.addParticipant;
   }
 
   async removeParticipant(chatId: number, userId: number): Promise<Chat> {
@@ -194,16 +174,11 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.mutation<{ removeParticipant: Chat }>(mutation, {
-        chatId,
-        userId
-      });
-      return response.removeParticipant;
-    } catch (error) {
-      console.error('Failed to remove participant:', error);
-      throw new Error('Failed to remove participant');
-    }
+    const response = await graphqlService.mutation<{ removeParticipant: Chat }>(mutation, {
+      chatId,
+      userId
+    });
+    return response.removeParticipant;
   }
 
   async sendMessage(chatId: string, content: string): Promise<Message> {
@@ -223,16 +198,11 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.mutation<{ sendMessage: Message }>(mutation, {
-        chatId,
-        content
-      });
-      return response.sendMessage;
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      throw new Error('Failed to send message');
-    }
+    const response = await graphqlService.mutation<{ sendMessage: Message }>(mutation, {
+      chatId,
+      content
+    });
+    return response.sendMessage;
   }
 
   async getChatMessages(chatId: number): Promise<Message[]> {
@@ -252,15 +222,10 @@ export class ChatApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.query<GetChatMessagesResponse>(query, {
-        chatId
-      });
-      return response.getChatMessages;
-    } catch (error) {
-      console.error('Failed to get chat messages:', error);
-      throw new Error('Failed to fetch messages');
-    }
+    const response = await graphqlService.query<GetChatMessagesResponse>(query, {
+      chatId
+    });
+    return response.getChatMessages;
   }
 }
 

@@ -4,6 +4,8 @@ import "./globals.css";
 import { StoreProvider } from "../context/storeContext";
 import { ThemeProvider } from "../context/themeContext";
 import ConditionalNavbar from "@/components/UI/ConditionalNavbar";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +49,18 @@ export default function RootLayout({
           <StoreProvider>
             <ConditionalNavbar />
             {children}
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
           </StoreProvider>
         </ThemeProvider>
       </body>

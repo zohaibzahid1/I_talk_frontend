@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable } from 'mobx';
+import {  makeAutoObservable } from 'mobx';
 import { Chat, Message } from '@/types/auth';
 
 

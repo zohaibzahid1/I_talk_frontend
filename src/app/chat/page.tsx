@@ -1,6 +1,6 @@
 "use client";
 import { observer } from 'mobx-react-lite';
-import { useStore } from '@/context/storeContext';
+
 import ProtectedRoute from '@/components/ProtectedRoute/ProtectedRoute';
 import ChatInterface from '@/components/CHAT/sections/ChatInterface';
 

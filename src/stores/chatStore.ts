@@ -1,6 +1,6 @@
 import {  makeAutoObservable, runInAction } from "mobx";
 import { chatApi} from '../services/chatApi';
-import { Chat, Message } from '../types/auth';
+import { Chat, EmitData, Message } from '../types/auth';
 import socketService from '../services/socketService';
 
 
@@ -66,9 +66,9 @@ export class ChatStore {
             this.setChats(chats);
             // join each chat room for real-time updates
             this.joinAllChatRoom();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to load chats:', error);
-            this.setError(error.message || 'Failed to load chats');
+            this.setError(error instanceof Error ? error.message : 'Failed to load chats');
         } finally {
             this.setLoading(false);
         }
@@ -80,7 +80,8 @@ export class ChatStore {
         }
         // join all chat rooms for real-time updates
         this.chats.forEach(chat => {
-            socketService.joinRoom(String(chat.id));
+            const chatId = String(chat.id);
+            socketService.joinRoom(chatId);
         });
     }
     // Method to send a message via socket
@@ -107,9 +108,9 @@ export class ChatStore {
             // load messages for the currently active chat - this means messages will only be loaded when a chat is opened or created
             await this.loadChatMessages(Number(chat.id));
             return chat;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to open/create chat:', error);
-            this.setError(error.message || 'Failed to open chat');
+            this.setError(error instanceof Error ? error.message : 'Failed to open chat');
             throw error;
         } finally {
             this.setLoading(false);
@@ -123,9 +124,9 @@ export class ChatStore {
             this.setError(null);
             this.setActiveChat(chat);
             await this.loadChatMessages(Number(chat.id));
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to select chat:', error);
-            this.setError(error.message || 'Failed to load chat messages');
+            this.setError(error instanceof Error ? error.message : 'Failed to load chat messages');
         } finally {
             this.setLoading(false);
         }
@@ -141,9 +142,9 @@ export class ChatStore {
                 this.setActiveChat(chat);
             });
             return chat;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to create group chat:', error);
-            this.setError(error.message || 'Failed to create group chat');
+            this.setError(error instanceof Error ? error.message : 'Failed to create group chat');
             throw error;
         } finally {
             this.setLoading(false);
@@ -221,7 +222,7 @@ export class ChatStore {
             });
 
             console.error('Failed to send message:', error);
-            throw error;
+            Promise.reject(error);
         }
     }
   
@@ -274,8 +275,9 @@ export class ChatStore {
     // Set up socket event listeners for real-time messaging
     setupSocketListeners() {
         // Listen for incoming messages
-        socketService.on('receiveMessage', (data: { chatId: string; message: Message }) => {
-            this.handleIncomingMessage(data.chatId, data.message);
+        socketService.on('receiveMessage', (data: unknown) => {
+            const messageData = data as { chatId: string; message: Message };
+            this.handleIncomingMessage(messageData.chatId, messageData.message);
         });
     }
 

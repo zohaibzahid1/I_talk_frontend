@@ -1,5 +1,6 @@
 import { graphqlService } from './graphqlService';
-import { User, GoogleAuthUrlResponse, CheckAuthStatusResponse, LogoutResponse } from '../types/auth';
+import { toast } from 'react-toastify';
+import { GoogleAuthUrlResponse, CheckAuthStatusResponse, LogoutResponse } from '../types/auth';
 
 export class AuthApi {
 
@@ -10,13 +11,8 @@ export class AuthApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.query<GoogleAuthUrlResponse>(query);
-      return response.getGoogleAuthUrl;
-    } catch (error) {
-      console.error('Failed to get Google auth URL:', error);
-      throw new Error('Failed to initiate Google authentication');
-    }
+    const response = await graphqlService.query<GoogleAuthUrlResponse>(query);
+    return response.getGoogleAuthUrl;
   }
 
   async checkAuthStatus(): Promise<CheckAuthStatusResponse> {
@@ -37,7 +33,9 @@ export class AuthApi {
       const response = await graphqlService.query<CheckAuthStatusResponse>(query);
       return response;
     } catch (error) {
-      console.error('Auth status check failed:', error);
+      // For auth status check, we don't want to show error notifications
+      // Just return null to indicate not authenticated
+      console.log('Auth status check failed:', error);
       return { getCurrentUser: null };
     }
   }
@@ -49,13 +47,9 @@ export class AuthApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.mutation<LogoutResponse>(mutation);
-      return response.logout;
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
-    }
+    const response = await graphqlService.mutation<LogoutResponse>(mutation);
+    toast.success('Successfully logged out');
+    return response.logout;
   }
   async validateToken(): Promise<boolean> {
     const query = `

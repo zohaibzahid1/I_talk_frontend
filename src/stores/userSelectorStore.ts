@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { User } from '@/types/auth';
 import { usersApi } from '@/services/usersApi';
-import { LoginStore } from './loginStore';
+
 
 export class UserSelectorStore {
   users: User[] = [];

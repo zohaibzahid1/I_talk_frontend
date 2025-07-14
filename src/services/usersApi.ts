@@ -20,13 +20,8 @@ export class UsersApi {
       }
     `;
 
-    try {
-      const response = await graphqlService.query<GetAllUsersResponse>(query);
-      return response.getAllUsers;
-    } catch (error) {
-      console.error('Failed to get users:', error);
-      throw new Error('Failed to fetch users');
-    }
+    const response = await graphqlService.query<GetAllUsersResponse>(query);
+    return response.getAllUsers;
   }
 }
 
