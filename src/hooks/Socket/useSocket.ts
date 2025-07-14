@@ -1,59 +1,35 @@
 // hooks/useSocket.ts
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import socketService from '../../services/socketService';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'; // Default to local backend URL if not se
-
-export const useSocket = (): Socket | null => {
-  const socketRef = useRef<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+export const useSocket = () => {
+  const [isConnected, setIsConnected] = useState(socketService.connected);
 
   useEffect(() => {
-    if (!socketRef.current) {
-      socketRef.current = io(SOCKET_URL, {
-        transports: ['websocket'], // ensures WebSocket is used
-        withCredentials: true,
-      });
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
 
-      socketRef.current.on('connect', () => {
-        setIsConnected(true);
-      });
+    // Set up event listeners
+    socketService.on('connect', handleConnect);
+    socketService.on('disconnect', handleDisconnect);
 
-      socketRef.current.on('disconnect', () => {
-        setIsConnected(false);
-      });
-    }
+    // Update initial state
+    setIsConnected(socketService.connected);
 
     return () => {
-      socketRef.current?.disconnect();
+      // Clean up event listeners
+      socketService.off('connect', handleConnect);
+      socketService.off('disconnect', handleDisconnect);
     };
   }, []);
 
-  return socketRef.current;
-};
-
-// Custom hook to get the same socket instance across all components
-export const useSameSocket = (): { socket: Socket | null; isConnected: boolean } => {
-    const socket = useSocket();
-    const [isConnected, setIsConnected] = useState(false);
-
-    useEffect(() => {
-        if (socket) {
-            const handleConnect = () => setIsConnected(true);
-            const handleDisconnect = () => setIsConnected(false);
-
-            socket.on('connect', handleConnect);
-            socket.on('disconnect', handleDisconnect);
-
-            // Set initial connection state
-            setIsConnected(socket.connected);
-
-            return () => {
-                socket.off('connect', handleConnect);
-                socket.off('disconnect', handleDisconnect);
-            };
-        }
-    }, [socket]);
-
-    return { socket, isConnected };
+  return { 
+    socket: socketService, 
+    isConnected,
+    connect: () => socketService.connect(),
+    disconnect: () => socketService.disconnect(),
+    emit: (event: string, data: any) => socketService.emit(event, data),
+    on: (event: string, callback: (...args: any[]) => void) => socketService.on(event, callback),
+    off: (event: string, callback?: (...args: any[]) => void) => socketService.off(event, callback),
+  };
 };

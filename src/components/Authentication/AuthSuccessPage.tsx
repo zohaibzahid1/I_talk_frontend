@@ -16,8 +16,8 @@ const AuthSuccessPage = observer(() => {
         loginStore.setLoading(true);
         loginStore.clearError();
         
-        // Check authentication status to get user data
-        loginStore.checkAuthStatus(true);
+        // Check authentication status to get user data and connect to the socket
+        await loginStore.checkAuthStatus(true);
         
         // Only redirect if authentication was successful
         if (loginStore.isAuthenticated) {

@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/services/authApi';
 import LoadingSpinner from '../UI/LoadingSpinner';
+import { useStore } from '@/context/storeContext';
 
 
 interface ProtectedRouteProps {
@@ -14,6 +15,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = observer(({ children, fallback }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // null = checking, true = authenticated, false = not authenticated
   const router = useRouter();
+  const loginStore = useStore().loginStore;
 
   useEffect(() => {
     const validateToken = async () => {
@@ -28,6 +30,7 @@ const ProtectedRoute = observer(({ children, fallback }: ProtectedRouteProps) =>
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
+          loginStore.setAuthenticated(false);
           router.push('/login');
         }
       } catch (error) {

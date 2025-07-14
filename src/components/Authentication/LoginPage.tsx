@@ -19,7 +19,7 @@ const LoginPage = observer(() => {
     if (isClient && loginStore.isAuthenticated) {
       router.push('/');
     }
-  }, [loginStore.isAuthenticated, router, isClient]);
+  }, [router, isClient]);
 
   // Show loading screen during SSR or while checking authentication
   if (!isClient || loginStore.isLoading) {

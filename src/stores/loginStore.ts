@@ -2,6 +2,7 @@ import { autorun, makeAutoObservable } from "mobx";
 import { authApi} from '../services/authApi';
 import { User } from '../types/auth';
 import { LocalStorageService } from '../services/localStorageService';
+import socketService from '../services/socketService';
 
 export class LoginStore {
     isLoading = false;
@@ -21,11 +22,13 @@ export class LoginStore {
         
         autorun(() => {
             if (this.isAuthenticated) {
+                console.log('User is authenticated:', this.user);
                 // Save to local storage when authenticated (only on client)
                 if (typeof window !== 'undefined') {
                     LocalStorageService.saveUser(this.user);
                 }
             } else {
+                console.log('User is not authenticated');
                 // Clear local storage when not authenticated (only on client)
                 if (typeof window !== 'undefined') {
                     LocalStorageService.saveUser(null);
@@ -43,6 +46,8 @@ export class LoginStore {
             if (savedUser && savedAuthStatus) {
                 this.user = savedUser;
                 this.isAuthenticated = true;
+                // Connect socket for authenticated users on page refresh
+                socketService.connect();
             }
         }
     }
@@ -79,15 +84,11 @@ export class LoginStore {
             if (response.getCurrentUser) {
                 this.setUser(response.getCurrentUser);
                 this.setAuthenticated(true);
-                
-                // Connect to socket server if token exists
-                const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                if (token && this.rootStore?.socketStore) {
-                    this.rootStore.socketStore.connect(token);
-                }
+                socketService.connect();
                 
             } else {
                 this.setAuthenticated(false);
+                
             }
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -101,11 +102,13 @@ export class LoginStore {
         try {
             await authApi.logout();
             
-            // Disconnect from socket server
-            if (this.rootStore?.socketStore) {
-                this.rootStore.socketStore.disconnect();
+            // Clean up chat store socket listeners
+            if (this.rootStore?.chatStore) {
+                this.rootStore.chatStore.cleanup();
             }
             
+            // Disconnect from socket server
+            socketService.disconnect();
             // Clear local state
             this.setUser(null);
             this.setAuthenticated(false);
@@ -115,10 +118,13 @@ export class LoginStore {
         } catch (error) {
             console.error('Logout failed:', error);
             
-            // Disconnect from socket server even if logout fails
-            if (this.rootStore?.socketStore) {
-                this.rootStore.socketStore.disconnect();
+            // Clean up chat store socket listeners even if logout fails
+            if (this.rootStore?.chatStore) {
+                this.rootStore.chatStore.cleanup();
             }
+            
+            // Disconnect from socket server even if logout fails
+            socketService.disconnect();
             
             // Even if the server logout fails, clear local state
             this.setUser(null);
