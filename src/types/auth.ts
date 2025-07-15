@@ -31,8 +31,10 @@ export interface Chat {
     lastName?: string;
     avatar?: string;
     isOnline: boolean;
+    isTyping?: boolean; // Optional field to indicate if someone is typing
   }>;
   lastMessage?: Message;
+   // Optional field to indicate if someone is typing
 }
 export interface AuthState {
   isLoading: boolean;

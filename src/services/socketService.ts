@@ -91,6 +91,15 @@ class SocketService {
     this.emit('userOnline', userId);
   }
 
+  // Typing indicator methods
+  startTyping(chatId: string, userId: string): void {
+    this.emit('userStartTyping', { chatId, userId });
+  }
+
+  stopTyping(chatId: string, userId: string): void {
+    this.emit('userStopTyping', { chatId, userId });
+  }
+
   get connected(): boolean {
     return this.isConnected && this.socket?.connected === true;
   }

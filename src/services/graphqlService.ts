@@ -53,7 +53,7 @@ export class GraphQLService {
     
     setTimeout(() => {
       if (typeof window !== 'undefined') {
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     }, 2000);
   }

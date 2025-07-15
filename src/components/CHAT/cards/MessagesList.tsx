@@ -143,6 +143,51 @@ const MessagesList = observer(() => {
               </div>
             );
           })}
+          
+          {/* Typing indicator */}
+          {chatStore.isAnyoneTyping(currentChat, Number(loginStore.user?.id) || 0) && (
+            <div className="flex items-end space-x-2 max-w-xs lg:max-w-md animate-fade-in mb-8">
+              {/* Avatar for typing indicator */}
+              <div className="flex-shrink-0">
+                {currentChat.isGroup ? (
+                  // For group chats, show a generic typing avatar
+                  <div className="h-6 w-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-xs font-bold text-white">...</span>
+                  </div>
+                ) : (
+                  // For direct chats, show the other participant's avatar
+                  (() => {
+                    const otherParticipant = chatStore.getOtherParticipant(currentChat, Number(loginStore.user?.id) || 0);
+                    return otherParticipant?.avatar ? (
+                      <img
+                        className="h-6 w-6 rounded-full object-cover ring-1 ring-white shadow-sm"
+                        src={otherParticipant.avatar}
+                        alt={`${otherParticipant.firstName} ${otherParticipant.lastName}`}
+                      />
+                    ) : (
+                      <div className="h-6 w-6 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center shadow-sm">
+                        <span className="text-xs font-bold text-white">
+                          {otherParticipant?.firstName?.charAt(0) || '?'}
+                        </span>
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
+
+              {/* Typing bubble */}
+              <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+                <div className="flex items-center">
+                  <div className="flex space-x-1">
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style={{ animationDelay: '200ms' }}></div>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style={{ animationDelay: '400ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Scroll anchor - always at the bottom */}
           <div ref={messagesEndRef} className="h-1" />
         </>

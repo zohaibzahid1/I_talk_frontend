@@ -92,37 +92,71 @@ const ChatHeader = observer(({ onClose }: ChatHeaderProps) => {
         {/* Chat info */}
         <div className="flex-1">
           <h2 className="text-xl font-bold text-gray-900">{displayName}</h2>
+          
+          {/* Typing indicator for direct chats */}
           {!currentChat.isGroup && (
-            <div className="flex items-center space-x-2 mt-1">
-              <div 
-                className={`flex items-center space-x-1.5 px-2 py-1 rounded-full transition-all duration-300 ${
-                  isOtherOnline 
-                    ? 'bg-green-100 text-green-700 shadow-sm' 
-                    : 'bg-red-50 text-red-600'
-                }`}
-              >
-                <div 
-                  className={`w-2 h-2 rounded-full ${
-                    isOtherOnline ? 'bg-green-500 animate-pulse' : 'bg-red-400'
-                  }`}
-                />
-                <span className="text-sm font-medium">
-                  {isOtherOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
+            <div className="mt-1">
+              {chatStore.isAnyoneTyping(currentChat, currentUserId) ? (
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="text-sm text-blue-600 font-medium">typing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div 
+                    className={`flex items-center space-x-1.5 px-2 py-1 rounded-full transition-all duration-300 ${
+                      isOtherOnline 
+                        ? 'bg-green-100 text-green-700 shadow-sm' 
+                        : 'bg-red-50 text-red-600'
+                    }`}
+                  >
+                    <div 
+                      className={`w-2 h-2 rounded-full ${
+                        isOtherOnline ? 'bg-green-500 animate-pulse' : 'bg-red-400'
+                      }`}
+                    />
+                    <span className="text-sm font-medium">
+                      {isOtherOnline ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+          
+          {/* Group chat info with typing indicators */}
           {currentChat.isGroup && (
-            <div className="flex items-center space-x-3 mt-1">
-              <span className="text-sm text-gray-500 font-medium">
-                {currentChat.participants.length} members
-              </span>
-              {onlineCount > 0 && (
-                <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-green-100 text-green-700 shadow-sm">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-medium">
-                    {onlineCount} online
+            <div className="mt-1">
+              {chatStore.isAnyoneTyping(currentChat, currentUserId) ? (
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="text-sm text-blue-600 font-medium">
+                    {chatStore.getTypingParticipants(currentChat, currentUserId).map(p => 
+                      `${p.firstName || 'Someone'}`
+                    ).join(', ')} {chatStore.getTypingParticipants(currentChat, currentUserId).length === 1 ? 'is' : 'are'} typing...
                   </span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-500 font-medium">
+                    {currentChat.participants.length} members
+                  </span>
+                  {onlineCount > 0 && (
+                    <div className="flex items-center space-x-1.5 px-2 py-1 rounded-full bg-green-100 text-green-700 shadow-sm">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-sm font-medium">
+                        {onlineCount} online
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

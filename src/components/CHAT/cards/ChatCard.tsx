@@ -116,12 +116,30 @@ const ChatCard = observer(({ chat, onChatSelect, isActive, chatListStore }: Chat
               </p>
             )}
           </div>
-          <p className="text-sm text-gray-600 truncate mt-0.5">
-            {lastMessage 
-              ? chatListStore.formatLastMessage(chat, loginStore.user?.id || 0)
-              : 'No messages yet'
-            }
-          </p>
+          <div className="text-sm text-gray-600 truncate mt-0.5">
+            {chatStore.isAnyoneTyping(chat, loginStore.user?.id || 0) ? (
+              <div className="flex items-center space-x-1 text-blue-600">
+                <div className="flex space-x-0.5">
+                  <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+                <span className="text-xs font-medium">
+                  {chat.isGroup 
+                    ? `${chatStore.getTypingParticipants(chat, loginStore.user?.id || 0).map(p => p.firstName).join(', ')} typing...`
+                    : 'typing...'
+                  }
+                </span>
+              </div>
+            ) : (
+              <div>
+                {lastMessage 
+                  ? chatListStore.formatLastMessage(chat, loginStore.user?.id || 0)
+                  : 'No messages yet'
+                }
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

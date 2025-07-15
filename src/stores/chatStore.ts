@@ -311,6 +311,28 @@ export class ChatStore {
         ).length;
     }
 
+    // Helper method to get typing participants (excluding current user)
+    getTypingParticipants(chat: Chat, currentUserId: string | number) {
+        return chat.participants.filter(p => 
+            p.id.toString() !== currentUserId.toString() && p.isTyping
+        );
+    }
+
+    // Helper method to check if anyone is typing in the chat
+    isAnyoneTyping(chat: Chat, currentUserId: string | number): boolean {
+        return this.getTypingParticipants(chat, currentUserId).length > 0;
+    }
+
+    // Start typing indicator
+    startTyping(chatId: string, userId: string) {
+        socketService.startTyping(chatId, userId);
+    }
+
+    // Stop typing indicator
+    stopTyping(chatId: string, userId: string) {
+        socketService.stopTyping(chatId, userId);
+    }
+
     // Set up socket event listeners for real-time messaging
     setupSocketListeners() {
         // Listen for incoming messages
@@ -323,6 +345,12 @@ export class ChatStore {
         socketService.on('userStatusChanged', (data: unknown) => {
             const statusData = data as { userId: string; isOnline: boolean };
             this.handleUserStatusChange(statusData.userId, statusData.isOnline);
+        });
+
+        // Listen for typing status changes
+        socketService.on('userTypingStatusChanged', (data: unknown) => {
+            const typingData = data as { chatId: string; userId: string; isTyping: boolean };
+            this.handleTypingStatusChange(typingData.chatId, typingData.userId, typingData.isTyping);
         });
     }
 
@@ -378,9 +406,39 @@ export class ChatStore {
         });
     }
 
+    // Handle typing status changes from socket
+    handleTypingStatusChange(chatId: string, userId: string, isTyping: boolean) {
+        runInAction(() => {
+            // Update typing status for the specific chat
+            const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
+            
+            if (chatIndex !== -1) {
+                const participantIndex = this.chats[chatIndex].participants.findIndex(
+                    participant => participant.id.toString() === userId.toString()
+                );
+                
+                if (participantIndex !== -1) {
+                    this.chats[chatIndex].participants[participantIndex].isTyping = isTyping;
+                }
+            }
+
+            // If this is the currently active chat, update it too
+            if (this.activeChat && this.activeChat.id.toString() === chatId.toString()) {
+                const participantIndex = this.activeChat.participants.findIndex(
+                    participant => participant.id.toString() === userId.toString()
+                );
+                
+                if (participantIndex !== -1) {
+                    this.activeChat.participants[participantIndex].isTyping = isTyping;
+                }
+            }
+        });
+    }
+
     // Clean up socket listeners (call this when user logs out or component unmounts)
     cleanup() {
         socketService.off('receiveMessage');
         socketService.off('userStatusChanged');
+        socketService.off('userTypingStatusChanged');
     }
 }

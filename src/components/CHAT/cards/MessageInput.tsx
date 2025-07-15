@@ -5,7 +5,7 @@
 // input bar
 
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/context/storeContext';
 
@@ -14,14 +14,74 @@ interface MessageInputProps {
 }
 
 const MessageInput = observer(({ onSendMessage }: MessageInputProps) => {
-  const { chatWindowStore } = useStore();
+  const { chatWindowStore, chatStore, loginStore } = useStore();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isTypingRef = useRef(false);
 
   // Get current chat from store
   const currentChat = chatWindowStore.currentChat;
+  const currentUserId = loginStore.user?.id;
+
+  // Handle typing detection
+  const handleTypingStart = () => {
+    if (!currentChat || !currentUserId || isTypingRef.current) return;
+    
+    isTypingRef.current = true;
+    chatStore.startTyping(currentChat.id, String(currentUserId));
+  };
+
+  const handleTypingStop = () => {
+    if (!currentChat || !currentUserId || !isTypingRef.current) return;
+    
+    isTypingRef.current = false;
+    chatStore.stopTyping(currentChat.id, String(currentUserId));
+  };
+
+  const resetTypingTimeout = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      handleTypingStop();
+    }, 1000); // Stop typing after 1 second of inactivity
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    chatWindowStore.setNewMessage(value);
+    
+    if (value.trim()) {
+      if (!isTypingRef.current) {
+        handleTypingStart();
+      }
+      resetTypingTimeout();
+    } else {
+      handleTypingStop();
+    }
+  };
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      handleTypingStop();
+    };
+  }, []);
+
+  // Stop typing when chat changes
+  useEffect(() => {
+    handleTypingStop();
+  }, [currentChat?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatWindowStore.newMessage.trim() || chatWindowStore.isLoading || !currentChat) return;
+
+    // Stop typing when sending message
+    handleTypingStop();
 
     const messageContent = chatWindowStore.newMessage.trim();
     chatWindowStore.clearMessage();
@@ -64,7 +124,7 @@ const MessageInput = observer(({ onSendMessage }: MessageInputProps) => {
           <input
             type="text"
             value={chatWindowStore.newMessage}
-            onChange={(e) => chatWindowStore.setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Type a message..."
             disabled={chatWindowStore.isLoading}
             className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 bg-white/90 backdrop-blur-sm placeholder-gray-500 text-gray-900 shadow-sm transition-all duration-200 hover:shadow-md"
