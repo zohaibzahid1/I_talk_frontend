@@ -79,7 +79,7 @@ const LoginPage = observer(() => {
             </svg>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome to ChatApp
+            Welcome to iTalk
           </h2>
           <p className="text-sm sm:text-base text-gray-600">
             Sign in to your account to start chatting

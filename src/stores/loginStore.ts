@@ -49,6 +49,12 @@ export class LoginStore {
                 this.isAuthenticated = true;
                 // Connect socket for authenticated users on page refresh
                 socketService.connect();
+                // Set user online status after connection
+                setTimeout(() => {
+                    if (socketService.connected && this.user) {
+                        socketService.setUserOnline(this.user.id.toString());
+                    }
+                }, 500);
             }
         }
     }
@@ -86,6 +92,12 @@ export class LoginStore {
                 this.setUser(response.getCurrentUser);
                 this.setAuthenticated(true);
                 socketService.connect();
+                // Set user online status after connection
+                setTimeout(() => {
+                    if (socketService.connected && this.user) {
+                        socketService.setUserOnline(this.user.id.toString());
+                    }
+                }, 500);
                 
             } else {
                 this.setAuthenticated(false);

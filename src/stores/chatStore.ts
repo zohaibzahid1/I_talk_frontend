@@ -166,14 +166,14 @@ export class ChatStore {
 
         // Optimistically add the message to activeChatMessages if this is the active chat
         runInAction(() => {
-            if (this.activeChat && this.activeChat.id === chatId) {
+            if (this.activeChat && this.activeChat.id.toString() === chatId.toString()) {
                 this.activeChatMessages.push(tempMessage);
             }
         });
 
         // Update lastMessage in chats array
         runInAction(() => {
-            const chatIndex = this.chats.findIndex(chat => chat.id === chatId);
+            const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
             if (chatIndex !== -1) {
                 this.chats[chatIndex].lastMessage = tempMessage;
             }
@@ -184,7 +184,7 @@ export class ChatStore {
             
             // Replace the temporary message with the real one in activeChatMessages
             runInAction(() => {
-                if (this.activeChat && this.activeChat.id === chatId) {
+                if (this.activeChat && this.activeChat.id.toString() === chatId.toString()) {
                     const tempIndex = this.activeChatMessages.findIndex(msg => msg.id === tempMessage.id);
                     if (tempIndex !== -1) {
                         this.activeChatMessages[tempIndex] = newMessage;
@@ -194,7 +194,7 @@ export class ChatStore {
 
             // Update lastMessage in chats array with real message
             runInAction(() => {
-                const chatIndex = this.chats.findIndex(chat => chat.id === chatId);
+                const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
                 if (chatIndex !== -1) {
                     this.chats[chatIndex].lastMessage = newMessage;
                 }
@@ -206,7 +206,7 @@ export class ChatStore {
         } catch (error) {
             // Remove the temporary message on error from activeChatMessages
             runInAction(() => {
-                if (this.activeChat && this.activeChat.id === chatId) {
+                if (this.activeChat && this.activeChat.id.toString() === chatId.toString()) {
                     const tempIndex = this.activeChatMessages.findIndex(msg => msg.id === tempMessage.id);
                     if (tempIndex !== -1) {
                         this.activeChatMessages.splice(tempIndex, 1);
@@ -214,7 +214,7 @@ export class ChatStore {
                 }
 
                 // Restore previous lastMessage in chats array on error
-                const chatIndex = this.chats.findIndex(chat => chat.id === chatId);
+                const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
                 if (chatIndex !== -1) {
                     // We could restore the previous lastMessage here if needed
                     // For now, we'll leave it as is since the temp message wasn't saved to backend
@@ -272,6 +272,26 @@ export class ChatStore {
         return chat.participants.find(p => p.id.toString() !== currentUserId.toString());
     }
 
+    // Helper method to check if other participant is online (for direct chats)
+    isOtherParticipantOnline(chat: Chat, currentUserId: string | number): boolean {
+        if (chat.isGroup) {
+            // For group chats, return true if any participant (except current user) is online
+            return chat.participants.some(p => 
+                p.id.toString() !== currentUserId.toString() && p.isOnline
+            );
+        }
+        
+        const otherParticipant = this.getOtherParticipant(chat, currentUserId);
+        return otherParticipant?.isOnline || false;
+    }
+
+    // Helper method to get online participants count (for group chats)
+    getOnlineParticipantsCount(chat: Chat, currentUserId: string | number): number {
+        return chat.participants.filter(p => 
+            p.id.toString() !== currentUserId.toString() && p.isOnline
+        ).length;
+    }
+
     // Set up socket event listeners for real-time messaging
     setupSocketListeners() {
         // Listen for incoming messages
@@ -279,20 +299,26 @@ export class ChatStore {
             const messageData = data as { chatId: string; message: Message };
             this.handleIncomingMessage(messageData.chatId, messageData.message);
         });
+
+        // Listen for user status changes
+        socketService.on('userStatusChanged', (data: unknown) => {
+            const statusData = data as { userId: string; isOnline: boolean };
+            this.handleUserStatusChange(statusData.userId, statusData.isOnline);
+        });
     }
 
     // Handle incoming messages from socket
     handleIncomingMessage(chatId: string, message: Message) {
         runInAction(() => {
             // Find the chat this message belongs to
-            const chatIndex = this.chats.findIndex(chat => chat.id === chatId);
+            const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
             
             if (chatIndex !== -1) {
                 // Update the lastMessage for this chat
                 this.chats[chatIndex].lastMessage = message;
                 
                 // If this is the currently active chat, add message to activeChatMessages
-                if (this.activeChat && this.activeChat.id === chatId) {
+                if (this.activeChat && this.activeChat.id.toString() === chatId.toString()) {
                     // Check if message already exists (to avoid duplicates)
                     const existingMessageIndex = this.activeChatMessages.findIndex(
                         msg => msg.id === message.id
@@ -306,8 +332,36 @@ export class ChatStore {
         });
     }
 
+    // Handle user status changes from socket
+    handleUserStatusChange(userId: string, isOnline: boolean) {
+        runInAction(() => {
+            // Update online status for all chats that include this user
+            this.chats.forEach(chat => {
+                const participantIndex = chat.participants.findIndex(
+                    participant => participant.id.toString() === userId.toString()
+                );
+                
+                if (participantIndex !== -1) {
+                    chat.participants[participantIndex].isOnline = isOnline;
+                }
+            });
+
+            // If this user is part of the active chat, update it too
+            if (this.activeChat) {
+                const participantIndex = this.activeChat.participants.findIndex(
+                    participant => participant.id.toString() === userId.toString()
+                );
+                
+                if (participantIndex !== -1) {
+                    this.activeChat.participants[participantIndex].isOnline = isOnline;
+                }
+            }
+        });
+    }
+
     // Clean up socket listeners (call this when user logs out or component unmounts)
     cleanup() {
         socketService.off('receiveMessage');
+        socketService.off('userStatusChanged');
     }
 }

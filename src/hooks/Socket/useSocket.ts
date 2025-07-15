@@ -28,8 +28,8 @@ export const useSocket = () => {
     isConnected,
     connect: () => socketService.connect(),
     disconnect: () => socketService.disconnect(),
-    emit: (event: string, data: any) => socketService.emit(event, data),
-    on: (event: string, callback: (...args: any[]) => void) => socketService.on(event, callback),
-    off: (event: string, callback?: (...args: any[]) => void) => socketService.off(event, callback),
+    emit: (event: string, data: unknown) => socketService.emit(event, data),
+    on: (event: string, callback: (...args: unknown[]) => void) => socketService.on(event, callback),
+    off: (event: string, callback?: (...args: unknown[]) => void) => socketService.off(event, callback),
   };
 };

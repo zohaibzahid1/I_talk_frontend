@@ -87,6 +87,10 @@ class SocketService {
     this.emit('sendMessage', { chatId, message });
   }
 
+  setUserOnline(userId: string): void {
+    this.emit('userOnline', userId);
+  }
+
   get connected(): boolean {
     return this.isConnected && this.socket?.connected === true;
   }
