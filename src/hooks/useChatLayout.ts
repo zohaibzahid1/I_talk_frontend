@@ -8,6 +8,7 @@ export const useChatLayout = () => {
   const [showUserSelector, setShowUserSelector] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
 
+  // Handle chat selection and opening from the chat list
   const handleChatSelect = async (chat: Chat) => {
     try {
       setSelectedChat(chat);
@@ -24,7 +25,7 @@ export const useChatLayout = () => {
     try {
       const chat = await chatStore.openOrCreateChat(user.id);
       setSelectedChat(chat);
-      chatStore.setActiveChat(chat);
+      //chatStore.setActiveChat(chat);
       // Also set the chat in the ChatWindowStore
       chatWindowStore.setCurrentChat(chat);
       setShowUserSelector(false);

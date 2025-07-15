@@ -27,7 +27,7 @@ export class GraphQLService {
       
       // Show user-friendly message
       toast.error('Your session has expired. Please log in again.', {
-        autoClose: 3000
+        autoClose: 1500
       });
       
       // Clear any stored authentication data
@@ -42,20 +42,20 @@ export class GraphQLService {
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
-      }, 3500);
+      }, 2000);
       return;
     }
 
     // For any other error, show error and redirect to home page
     toast.error('Something went wrong. Redirecting to home page...', {
-      autoClose: 3000
+      autoClose: 1500
     });
     
     setTimeout(() => {
       if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
-    }, 3500);
+    }, 2000);
   }
 
   async request<T>(query: string, variables?: any): Promise<T> {

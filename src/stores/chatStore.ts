@@ -1,4 +1,4 @@
-import {  makeAutoObservable, runInAction } from "mobx";
+import {  autorun, makeAutoObservable, runInAction } from "mobx";
 import { chatApi} from '../services/chatApi';
 import { Chat, EmitData, Message } from '../types/auth';
 import socketService from '../services/socketService';
@@ -22,20 +22,27 @@ export class ChatStore {
         setTimeout(() => {
             this.setupSocketListeners();
         }, 100);
+        autorun(() => {
+            console.log ('Chat msgs:', this.activeChatMessages);
+        })
     }
 
+    // Set loading state
     setLoading(loading: boolean) {
         this.isLoading = loading;
     }
 
+    // Set an error message
     setError(error: string | null) {
         this.error = error;
     }
 
+    // Set the list of chats
     setChats(chats: Chat[]) {
         this.chats = chats;
     }
 
+    // Set the active chat and clear messages if no chat is provided
     setActiveChat(chat: Chat | null) {
         if (chat) {
             // Always reference the chat from the chats array to maintain consistency
@@ -49,6 +56,8 @@ export class ChatStore {
             this.clearActiveChatMessages();
         }
     }
+
+    // Add a chat to the start of the chats array or update existing one
     addChat(chat: Chat) {
         const existingIndex = this.chats.findIndex(c => c.id === chat.id);
         if (existingIndex >= 0) {
@@ -58,6 +67,7 @@ export class ChatStore {
         }
     }
 
+    // initiated by chat list component to load user chats
     async loadUserChats() {
         try {
             this.setLoading(true);
@@ -73,6 +83,8 @@ export class ChatStore {
             this.setLoading(false);
         }
     }
+
+    // When chat list initiates load users then load user messgae also initiates this function so the user joins every chat room
     async joinAllChatRoom() {
         if (!socketService.connected) {
             console.warn('Socket is not connected when trying to join rooms');
@@ -84,6 +96,8 @@ export class ChatStore {
             socketService.joinRoom(chatId);
         });
     }
+
+
     // Method to send a message via socket
     async sendMessageViaSocket(chatId: string, message: Message) {
         if (!socketService.connected) {
@@ -93,7 +107,8 @@ export class ChatStore {
         // Emit the message to the server
         socketService.sendMessage(chatId, message);
     }
-   
+
+    // Open or create a chat with another user this will also call the method to load messages for the newly created or opened chat
     async openOrCreateChat(otherUserId: string | number) {
         try {
             this.setLoading(true);
@@ -105,7 +120,8 @@ export class ChatStore {
                 this.setActiveChat(chat);
             });
 
-            // load messages for the currently active chat - this means messages will only be loaded when a chat is opened or created
+            // load messages for the selected  chat - this means messages will only be loaded when a chat is opened or created
+            // this is required so that even if user selects a esxisting memeber chat, the messages are loaded
             await this.loadChatMessages(Number(chat.id));
             return chat;
         } catch (error: unknown) {
@@ -117,7 +133,8 @@ export class ChatStore {
         }
     }
 
-    // Select an existing chat and load its messages
+
+    // Select an existing chat and load its messages This method is only used when a chat is selected from the chat list
     async selectChat(chat: Chat) {
         try {
             this.setLoading(true);
@@ -131,6 +148,7 @@ export class ChatStore {
             this.setLoading(false);
         }
     }
+
 
     async createGroupChat(name: string, participantIds: number[]) {
         try {
@@ -149,7 +167,8 @@ export class ChatStore {
         } finally {
             this.setLoading(false);
         }
-    }    // Send a message to a chat
+    }  
+      // Send a message to a chat
     async sendMessageToDB(chatId: string, content: string) {
         // Create a temporary message for optimistic updates
         const tempMessage: Message = {

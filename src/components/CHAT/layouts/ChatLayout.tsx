@@ -20,8 +20,8 @@ const ChatLayout = observer(({ children }: ChatLayoutProps) => {
     selectedChat,
     showUserSelector,
     isMobileView,
-    handleChatSelect,
-    handleUserSelect,
+    handleChatSelect, // use to handle chat selection
+    handleUserSelect, // when starting a new chat
     handleBackToList,
     handleStartNewChat,
     handleCloseUserSelector,

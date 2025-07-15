@@ -13,6 +13,7 @@ export class ChatWindowStore {
   isLoading = false;
   currentUserId: number | null = null;
   currentChat: Chat | null = null;
+  
 
   constructor() {
     makeAutoObservable(this);

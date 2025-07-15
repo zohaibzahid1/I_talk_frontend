@@ -16,7 +16,7 @@ const ChatWindow = observer(({ onClose }: ChatWindowProps) => {
   const { theme } = useTheme();
 
   // Get current chat from store
-  const currentChat = chatWindowStore.currentChat;
+  const currentChat = chatStore.activeChat;
 
   const handleSendMessage = async (message: string) => {
     const chatId = chatWindowStore.currentChatId;
