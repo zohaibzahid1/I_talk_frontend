@@ -7,9 +7,11 @@ class SocketService {
   private static instance: SocketService;
   private socket: Socket | null = null;
   private isConnected: boolean = false;
+  private currentUserId: string | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
+    this.setupBeforeUnloadHandler();
   }
 
   static getInstance(): SocketService {
@@ -19,7 +21,7 @@ class SocketService {
     return SocketService.instance;
   }
 
-  connect(): void {
+  connect(userId?: string): void {
     if (this.socket?.connected) {
       console.log('Socket already connected');
       return;
@@ -27,14 +29,21 @@ class SocketService {
 
     const SOCKET_URL = 'http://localhost:3000';
     console.log('Connecting to socket server at:', SOCKET_URL);
+    
     this.socket = io(SOCKET_URL, {
       transports: ['websocket'],
       withCredentials: true,
+      auth: { userId: userId || this.currentUserId }
     });
 
     this.socket.on('connect', () => {
       this.isConnected = true;
       console.log('Socket connected:', this.socket?.id);
+      
+      // Set user online if userId is provided
+      if (userId) {
+        this.setUserOnline(userId);
+      }
     });
 
     this.socket.on('disconnect', () => {
@@ -49,9 +58,16 @@ class SocketService {
 
   disconnect(): void {
     if (this.socket) {
+      // Send offline status before disconnecting
+      if (this.socket.connected && this.currentUserId) {
+        this.socket.emit('userOffline', this.currentUserId);
+        console.log(`User ${this.currentUserId} set offline before disconnect`);
+      }
+      
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
+      this.currentUserId = null;
     }
   }
 
@@ -88,10 +104,25 @@ class SocketService {
   }
 
   setUserOnline(userId: string): void {
+    this.currentUserId = userId;
     this.emit('userOnline', userId);
   }
+  
   setUserOffline(userId: string): void {
     this.emit('userOffline', userId);
+  }
+
+  // Handle page unload (user closes tab, navigates away, etc.)
+  private setupBeforeUnloadHandler(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        // Synchronously notify server that user is going offline
+        if (this.socket && this.socket.connected && this.currentUserId) {
+          this.socket.emit('userOffline', this.currentUserId);
+          console.log(`User ${this.currentUserId} set offline on page unload`);
+        }
+      });
+    }
   }
 
 
@@ -112,6 +143,10 @@ class SocketService {
 
   get socketId(): string | undefined {
     return this.socket?.id;
+  }
+
+  get userId(): string | null {
+    return this.currentUserId;
   }
 }
 
