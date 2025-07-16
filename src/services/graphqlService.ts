@@ -1,10 +1,12 @@
 
 import { toast } from 'react-toastify';
 
-// Use the proxied endpoint instead of direct backend URL
-const GRAPHQL_ENDPOINT = process.env.NODE_ENV === 'production' 
-  ? '/api/graphql' 
-  : '/api/graphql';
+// Use direct backend URL instead of proxy
+const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_BACKEND_URL 
+  ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/graphql`
+  : 'https://italk-v91x.onrender.com/graphql';
+
+console.log('Using GraphQL endpoint:', GRAPHQL_ENDPOINT);
   
 interface GraphQLResponse<T> {
   data: T;

@@ -1,5 +1,5 @@
 // services/socketService.ts
-import { EmitData, Message } from '@/types/auth';
+import { Message } from '@/types/auth';
 import { io, Socket } from 'socket.io-client';
 
 

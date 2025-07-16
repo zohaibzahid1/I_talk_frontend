@@ -1,6 +1,6 @@
-import {  autorun, makeAutoObservable, runInAction } from "mobx";
+import {  makeAutoObservable, runInAction } from "mobx";
 import { chatApi} from '../services/chatApi';
-import { Chat, EmitData, Message } from '../types/auth';
+import { Chat, Message } from '../types/auth';
 import socketService from '../services/socketService';
 
 
