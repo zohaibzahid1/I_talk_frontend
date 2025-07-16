@@ -27,7 +27,8 @@ class SocketService {
       return;
     }
 
-    const SOCKET_URL = 'http://localhost:3000';
+    // Connect directly to backend for socket.io
+    const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
     console.log('Connecting to socket server at:', SOCKET_URL);
     
     this.socket = io(SOCKET_URL, {

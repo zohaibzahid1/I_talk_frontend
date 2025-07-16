@@ -1,7 +1,11 @@
 
 import { toast } from 'react-toastify';
 
-const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'http://localhost:3000/graphql';
+// Use the proxied endpoint instead of direct backend URL
+const GRAPHQL_ENDPOINT = process.env.NODE_ENV === 'production' 
+  ? '/api/graphql' 
+  : '/api/graphql';
+  
 interface GraphQLResponse<T> {
   data: T;
   errors?: Array<{
