@@ -22,9 +22,7 @@ export class ChatStore {
         setTimeout(() => {
             this.setupSocketListeners();
         }, 100);
-        autorun(() => {
-            console.log ('Chat msgs:', this.activeChatMessages);
-        })
+        
     }
 
     // Set loading state
@@ -336,19 +334,19 @@ export class ChatStore {
     // Set up socket event listeners for real-time messaging
     setupSocketListeners() {
         // Listen for incoming messages
-        socketService.on('receiveMessage', (data: unknown) => {
+        socketService.on('receiveMessage', (data: any) => {
             const messageData = data as { chatId: string; message: Message };
             this.handleIncomingMessage(messageData.chatId, messageData.message);
         });
 
         // Listen for user status changes
-        socketService.on('userStatusChanged', (data: unknown) => {
+        socketService.on('userStatusChanged', (data: any) => {
             const statusData = data as { userId: string; isOnline: boolean };
             this.handleUserStatusChange(statusData.userId, statusData.isOnline);
         });
 
         // Listen for typing status changes
-        socketService.on('userTypingStatusChanged', (data: unknown) => {
+        socketService.on('userTypingStatusChanged', (data: any) => {
             const typingData = data as { chatId: string; userId: string; isTyping: boolean };
             this.handleTypingStatusChange(typingData.chatId, typingData.userId, typingData.isTyping);
         });

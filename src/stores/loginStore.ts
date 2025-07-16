@@ -113,6 +113,10 @@ export class LoginStore {
 
     async logout() {
         try {
+            if (this.user) {
+            socketService.setUserOffline(this.user.id.toString());
+            }
+            
             await authApi.logout();
             
             // Clean up chat store socket listeners

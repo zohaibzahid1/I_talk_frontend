@@ -25,8 +25,8 @@ class SocketService {
       return;
     }
 
-    const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
-    
+    const SOCKET_URL = 'http://localhost:3000';
+    console.log('Connecting to socket server at:', SOCKET_URL);
     this.socket = io(SOCKET_URL, {
       transports: ['websocket'],
       withCredentials: true,
@@ -90,6 +90,12 @@ class SocketService {
   setUserOnline(userId: string): void {
     this.emit('userOnline', userId);
   }
+  setUserOffline(userId: string): void {
+    this.emit('userOffline', userId);
+  }
+
+
+
 
   // Typing indicator methods
   startTyping(chatId: string, userId: string): void {
