@@ -73,17 +73,7 @@ export class ChatApi {
             avatar
             isOnline
           }
-          messages {
-            id
-            content
-            createdAt
-            sender {
-              id
-              firstName
-              lastName
-              avatar
-            }
-          }
+          
         }
       }
     `;

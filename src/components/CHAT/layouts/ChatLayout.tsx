@@ -22,6 +22,7 @@ const ChatLayout = observer(({ children }: ChatLayoutProps) => {
     isMobileView,
     handleChatSelect, // use to handle chat selection
     handleUserSelect, // when starting a new chat
+    handleGroupCreate, // when creating a group chat
     handleBackToList,
     handleStartNewChat,
     handleCloseUserSelector,
@@ -140,6 +141,7 @@ const ChatLayout = observer(({ children }: ChatLayoutProps) => {
       <UserSelector
         isOpen={showUserSelector}
         onUserSelect={handleUserSelect}
+        onGroupCreate={handleGroupCreate}
         onClose={handleCloseUserSelector}
       />
     </div>

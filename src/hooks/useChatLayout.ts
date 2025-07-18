@@ -48,6 +48,21 @@ export const useChatLayout = () => {
     setShowUserSelector(true);
   };
 
+  const handleGroupCreate = async (users: User[], groupName: string) => {
+    try {
+      const participantIds = users.map(user => Number(user.id));
+      const chat = await chatStore.createGroupChat(groupName, participantIds);
+      setSelectedChat(chat);
+      // Also set the chat in the ChatWindowStore
+      chatWindowStore.setCurrentChat(chat);
+      setShowUserSelector(false);
+      setIsMobileView(true);
+    } catch (error) {
+      console.error('Failed to create group chat:', error);
+      throw error;
+    }
+  };
+
   const handleCloseUserSelector = () => {
     setShowUserSelector(false);
   };
@@ -58,6 +73,7 @@ export const useChatLayout = () => {
     isMobileView,
     handleChatSelect,
     handleUserSelect,
+    handleGroupCreate,
     handleBackToList,
     handleStartNewChat,
     handleCloseUserSelector,

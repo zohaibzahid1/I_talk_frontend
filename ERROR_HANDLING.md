@@ -81,7 +81,7 @@ NEXT_PUBLIC_FRONTEND_URL=http://localhost:3001
 1. GraphQL returns 500/503 or network error
 2. Show "Server error" notification
 3. Redirect to `/` (home) after 2 seconds
-4. ProtectedRoute will handle further routing
+4. Middleware will handle authentication routing
 
 ### Network Errors
 1. Detect offline status

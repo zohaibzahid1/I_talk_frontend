@@ -4,6 +4,7 @@ import "./globals.css";
 import { StoreProvider } from "../context/storeContext";
 import { ThemeProvider } from "../context/themeContext";
 import ConditionalNavbar from "@/components/UI/ConditionalNavbar";
+import ClientLayout from "@/components/ClientLayout";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -44,23 +45,26 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning={true}
       >
         <ThemeProvider>
           <StoreProvider>
-            <ConditionalNavbar />
-            {children}
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
+            <ClientLayout>
+              <ConditionalNavbar />
+              {children}
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+            </ClientLayout>
           </StoreProvider>
         </ThemeProvider>
       </body>

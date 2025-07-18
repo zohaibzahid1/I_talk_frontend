@@ -38,6 +38,7 @@ const UserSelector = observer(({ onUserSelect, onGroupCreate, onClose, isOpen }:
 
   const handleCreateGroup = () => {
     if (userSelectorStore.canCreateGroup && onGroupCreate) {
+      console.log('Creating group with users:', userSelectorStore.selectedUsers, 'and name:', userSelectorStore.groupName);
       onGroupCreate(userSelectorStore.selectedUsers, userSelectorStore.groupName.trim());
       userSelectorStore.close();
     }

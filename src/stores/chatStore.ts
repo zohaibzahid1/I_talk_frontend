@@ -19,10 +19,12 @@ export class ChatStore {
     constructor() {
         makeAutoObservable(this);
         // Set up socket listeners with a small delay to ensure socket is ready
-        setTimeout(() => {
-            this.setupSocketListeners();
-        }, 100);
-        
+        // Only run on client side
+        if (typeof window !== 'undefined') {
+            setTimeout(() => {
+                this.setupSocketListeners();
+            }, 100);
+        }
     }
 
     // Set loading state
@@ -157,6 +159,13 @@ export class ChatStore {
                 this.addChat(chat);
                 this.setActiveChat(chat);
             });
+            
+            // Join the new chat room and load messages
+            if (socketService.connected) {
+                socketService.joinRoom(String(chat.id));
+            }
+            await this.loadChatMessages(Number(chat.id));
+            
             return chat;
         } catch (error: unknown) {
             console.error('Failed to create group chat:', error);
