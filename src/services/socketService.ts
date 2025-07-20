@@ -153,6 +153,12 @@ class SocketService {
     this.emit('userStopTyping', { chatId, userId });
   }
 
+  // Join a single chat room
+  joinSingleRoom(roomId: string): void {
+    console.log(`Joining single room: ${roomId}`);
+    this.emit('joinRoom', roomId);
+  }
+
   get connected(): boolean {
     return this.isConnected && this.socket?.connected === true;
   }

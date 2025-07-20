@@ -2,6 +2,8 @@ import {  makeAutoObservable, runInAction } from "mobx";
 import { chatApi} from '../services/chatApi';
 import { Chat, Message } from '../types/auth';
 import socketService from '../services/socketService';
+import { autorun } from 'mobx';
+import { RootStore } from './rootStore';
 
 
 // Chat store to manage chat-related state and actions
@@ -15,8 +17,10 @@ export class ChatStore {
     error: string | null = null;
     activeChatMessages: Message[] = []; // Messages for the currently active chat
     
+    
 
     constructor() {
+        
         makeAutoObservable(this);
         // Set up socket listeners with a small delay to ensure socket is ready
         // Only run on client side
@@ -25,6 +29,15 @@ export class ChatStore {
                 this.setupSocketListeners();
             }, 100);
         }
+        autorun(() => {
+            console.log("chat store current chat:", this.activeChat?.id);
+        });
+        
+        // Debug autorun to track chats array changes
+        autorun(() => {
+            console.log("chat store chats count:", this.chats.length);
+            console.log("chat store chats:", this.chats.map(c => ({id: c.id, name: c.name || 'direct chat'})));
+        });
     }
 
     // Set loading state
@@ -59,12 +72,18 @@ export class ChatStore {
 
     // Add a chat to the start of the chats array or update existing one
     addChat(chat: Chat) {
+        console.log('Adding chat to store:', chat.id);
         const existingIndex = this.chats.findIndex(c => c.id === chat.id);
         if (existingIndex >= 0) {
+            console.log('Updating existing chat at index:', existingIndex);
             this.chats[existingIndex] = chat;
         } else {
+            console.log('Adding new chat to start of array');
+            // when a new chat is created, add it to the start of the chats array
             this.chats.unshift(chat);
+            this.joinSingleChatRoom(chat.id.toString()); // Join the chat room for real-time updates only for new chats
         }
+        console.log('Total chats after addChat:', this.chats.length);
     }
 
     // initiated by chat list component to load user chats
@@ -84,6 +103,16 @@ export class ChatStore {
         }
     }
 
+    // Method to join a single chat room
+    joinSingleChatRoom(chatId: string) {
+        if (!socketService.connected) {
+            console.warn('Socket is not connected when trying to join room:', chatId);
+            return;
+        }
+        socketService.joinSingleRoom(chatId);
+        console.log(`Joined room for chat: ${chatId}`);
+    }
+
     // When chat list initiates load users then load user messgae also initiates this function so the user joins every chat room
     async joinAllChatRoom() {
         if (!socketService.connected) {
@@ -94,9 +123,9 @@ export class ChatStore {
         this.chats.forEach(chat => {
             const chatId = String(chat.id);
             socketService.joinRoom(chatId);
+
         });
     }
-
 
     // Method to send a message via socket
     async sendMessageViaSocket(chatId: string, message: Message) {
@@ -156,14 +185,11 @@ export class ChatStore {
             this.setError(null);
             const chat = await chatApi.createGroupChat(name, participantIds);
             runInAction(() => {
-                this.addChat(chat);
+                //this.addChat(chat);
                 this.setActiveChat(chat);
             });
             
-            // Join the new chat room and load messages
-            if (socketService.connected) {
-                socketService.joinRoom(String(chat.id));
-            }
+            // No need to join room here as addChat already does it
             await this.loadChatMessages(Number(chat.id));
             
             return chat;
@@ -251,8 +277,6 @@ export class ChatStore {
             Promise.reject(error);
         }
     }
-  
-
     // Method to load messages when chat is selected
     async loadChatMessages(chatId: number) {
         try {
@@ -340,6 +364,14 @@ export class ChatStore {
         socketService.stopTyping(chatId, userId);
     }
 
+
+
+
+
+
+
+
+
     // Set up socket event listeners for real-time messaging
     setupSocketListeners() {
         // Listen for incoming messages
@@ -359,8 +391,15 @@ export class ChatStore {
             const typingData = data as { chatId: string; userId: string; isTyping: boolean };
             this.handleTypingStatusChange(typingData.chatId, typingData.userId, typingData.isTyping);
         });
+
+        // Listen for new chat created notifications
+        socketService.on('newChatCreated', (data: any) => {
+            const chatData = data as { chat: Chat };
+            this.handleNewChatCreated(chatData.chat);
+        });
     }
 
+    // socket listners handlers 
     // Handle incoming messages from socket
     handleIncomingMessage(chatId: string, message: Message) {
         runInAction(() => {
@@ -416,9 +455,10 @@ export class ChatStore {
     // Handle typing status changes from socket
     handleTypingStatusChange(chatId: string, userId: string, isTyping: boolean) {
         runInAction(() => {
+            console.log(`User ${userId} is typing in chat ${chatId}: ${isTyping}`);
             // Update typing status for the specific chat
             const chatIndex = this.chats.findIndex(chat => chat.id.toString() === chatId.toString());
-            
+            // If chat exists, update the participant's typing status
             if (chatIndex !== -1) {
                 const participantIndex = this.chats[chatIndex].participants.findIndex(
                     participant => participant.id.toString() === userId.toString()
@@ -442,6 +482,20 @@ export class ChatStore {
         });
     }
 
-    // Clean up socket listeners (call this when user logs out or component unmounts)
-    
+    // Handle new chat created notification from socket
+    handleNewChatCreated(chat: Chat) {
+        console.log('New chat created notification received:', chat);
+        console.log('Current chats before adding:', this.chats.length);
+        
+        runInAction(() => {
+            // Use addChat method which has proper duplicate checking
+            this.addChat(chat);
+            console.log('Current chats after adding:', this.chats.length);
+            console.log('Chats array:', this.chats.map(c => ({id: c.id, name: c.name, isGroup: c.isGroup})));
+        });
+    }
+
+
+
+   
 }

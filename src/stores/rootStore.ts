@@ -15,8 +15,8 @@ export class RootStore {
     
     
     constructor() {
-        this.chatStore = new ChatStore();
         this.loginStore = new LoginStore(this);
+        this.chatStore = new ChatStore();
         this.chatListStore = new ChatListStore();
         this.chatWindowStore = new ChatWindowStore();
         this.userSelectorStore = new UserSelectorStore();

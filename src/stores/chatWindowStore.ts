@@ -1,4 +1,4 @@
-import {  makeAutoObservable } from 'mobx';
+import {  autorun, makeAutoObservable } from 'mobx';
 import { Chat, Message } from '@/types/auth';
 
 
@@ -17,6 +17,9 @@ export class ChatWindowStore {
 
   constructor() {
     makeAutoObservable(this);
+    autorun(() => {
+    console.log("chatwindow current chat = ", this.currentChat?.id);
+    } );
   }
 
   setCurrentUserId(userId: number | null) {
