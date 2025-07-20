@@ -1,7 +1,7 @@
 "use client";
 import { observer } from 'mobx-react-lite';
 
-import ChatInterface from '@/components/CHAT/sections/ChatInterface';
+import ChatInterface from '@/components/Chating/sections/ChatInterface';
 
 const ChatPage = observer(() => {
   return (

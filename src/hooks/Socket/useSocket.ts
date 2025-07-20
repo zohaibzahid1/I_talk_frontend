@@ -2,19 +2,21 @@
 import { useEffect, useState } from 'react';
 import socketService from '../../services/socketService';
 
+
 export const useSocket = () => {
   const [isConnected, setIsConnected] = useState(socketService.connected);
 
   useEffect(() => {
     const handleConnect = () => setIsConnected(true);
     const handleDisconnect = () => setIsConnected(false);
-
     // Set up event listeners
     socketService.on('connect', handleConnect);
     socketService.on('disconnect', handleDisconnect);
+    
 
     // Update initial state
     setIsConnected(socketService.connected);
+    
 
     return () => {
       // Clean up event listeners

@@ -13,6 +13,7 @@ export class RootStore {
     chatWindowStore: ChatWindowStore;
     userSelectorStore: UserSelectorStore;
     
+    
     constructor() {
         this.chatStore = new ChatStore();
         this.loginStore = new LoginStore(this);

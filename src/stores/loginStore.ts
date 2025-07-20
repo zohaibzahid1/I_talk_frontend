@@ -48,13 +48,7 @@ export class LoginStore {
                 this.user = savedUser;
                 this.isAuthenticated = true;
                 // Connect socket for authenticated users on page refresh
-                socketService.connect();
-                // Set user online status after connection
-                setTimeout(() => {
-                    if (socketService.connected && this.user) {
-                        socketService.setUserOnline(this.user.id.toString());
-                    }
-                }, 500);
+                this.connectSocket();
             }
         }
     }
@@ -91,13 +85,7 @@ export class LoginStore {
             if (response.getCurrentUser) {
                 this.setUser(response.getCurrentUser);
                 this.setAuthenticated(true);
-                socketService.connect();
-                // Set user online status after connection
-                setTimeout(() => {
-                    if (socketService.connected && this.user) {
-                        socketService.setUserOnline(this.user.id.toString());
-                    }
-                }, 500);
+                this.connectSocket();
                 
             } else {
                 this.setAuthenticated(false);
@@ -119,12 +107,13 @@ export class LoginStore {
             
             await authApi.logout();
             
-            // Clean up chat store socket listeners
-            if (this.rootStore?.chatStore) {
-                this.rootStore.chatStore.cleanup();
-            }
+            // // Clean up chat store socket listeners
+            // if (this.rootStore?.chatStore) {
+            //     this.rootStore.chatStore.cleanup();
+            // }
             
             // Disconnect from socket server
+            socketService.cleanup();
             socketService.disconnect();
             // Clear local state
             this.setUser(null);
@@ -149,6 +138,22 @@ export class LoginStore {
             LocalStorageService.clearStorage();
         }
     }
+
+    // Connect socket with user authentication check and avoid duplicate connections
+    private connectSocket() {
+        // Only connect if not already connected and user is authenticated
+        if (!socketService.connected && this.user) {
+            socketService.connect();
+            
+            // Set user online status after connection
+            setTimeout(() => {
+                if (socketService.connected && this.user) {
+                    socketService.setUserOnline(this.user.id.toString());
+                }
+            }, 500);
+        }
+    }
+
     handleGoogleLogin = async () => {
         try {
             this.setLoading(true);

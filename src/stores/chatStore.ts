@@ -443,9 +443,5 @@ export class ChatStore {
     }
 
     // Clean up socket listeners (call this when user logs out or component unmounts)
-    cleanup() {
-        socketService.off('receiveMessage');
-        socketService.off('userStatusChanged');
-        socketService.off('userTypingStatusChanged');
-    }
+    
 }

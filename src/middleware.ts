@@ -42,6 +42,9 @@ export async function middleware(request: NextRequest) {
         const response = NextResponse.redirect(new URL('/login', request.url));
         response.cookies.delete('access_token');
         response.cookies.delete('refresh_token');
+        // also clear local storage if needed
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('user');
         return response;
       }
       

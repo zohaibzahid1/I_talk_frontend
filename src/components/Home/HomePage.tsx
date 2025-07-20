@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/context/storeContext';
-import ChatInterface from '../CHAT/sections/ChatInterface';
+import ChatInterface from '../Chating/sections/ChatInterface';
 import UserSelector from '../chatSelection/UserSelector';
 import { User } from '@/types/auth';
 

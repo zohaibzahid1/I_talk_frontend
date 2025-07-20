@@ -7,6 +7,7 @@ class SocketService {
   private static instance: SocketService;
   private socket: Socket | null = null;
   private isConnected: boolean = false;
+  private isConnecting: boolean = false;
   private currentUserId: string | null = null;
 
   private constructor() {
@@ -22,10 +23,20 @@ class SocketService {
   }
 
   connect(userId?: string): void {
+    // Check if already connected
     if (this.socket?.connected) {
       console.log('Socket already connected');
       return;
     }
+
+    // Check if already in connecting state
+    if (this.isConnecting) {
+      console.log('Socket is already connecting');
+      return;
+    }
+
+    console.log('Initiating new socket connection...');
+    this.isConnecting = true;
 
     // Connect directly to backend for socket.io
     const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
@@ -39,6 +50,7 @@ class SocketService {
 
     this.socket.on('connect', () => {
       this.isConnected = true;
+      this.isConnecting = false;
       console.log('Socket connected:', this.socket?.id);
       
       // Set user online if userId is provided
@@ -49,10 +61,12 @@ class SocketService {
 
     this.socket.on('disconnect', () => {
       this.isConnected = false;
+      this.isConnecting = false;
       console.log('Socket disconnected');
     });
 
     this.socket.on('connect_error', (error) => {
+      this.isConnecting = false;
       console.error('Socket connection error:', error);
     });
   }
@@ -68,6 +82,7 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
+      this.isConnecting = false;
       this.currentUserId = null;
     }
   }
@@ -149,6 +164,12 @@ class SocketService {
   get userId(): string | null {
     return this.currentUserId;
   }
+  
+  cleanup() {
+        socketService.off('receiveMessage');
+        socketService.off('userStatusChanged');
+        socketService.off('userTypingStatusChanged');
+    }
 }
 
 // Export singleton instance
